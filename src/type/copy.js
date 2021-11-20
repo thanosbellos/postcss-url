@@ -12,10 +12,13 @@ const getTargetDir = paths.getTargetDir;
 const getAssetsPath = paths.getAssetsPath;
 const normalize = paths.normalize;
 
+// TODO esbuild like name options input
 const getHashName = (file, options) =>
-    (options && options.append ? (`${path.basename(file.path, path.extname(file.path))}_`) : '')
-  + calcHash(file.contents, options)
-  + path.extname(file.path);
+    (options && options.append ? (`${path.basename(file.path,
+        path.extname(file.path))}${options.kebabCase ? '-' : '_'}`) : '')
+    + calcHash(file.contents, options)
+    + (options && options.suffix ? (`.${options.suffix}`) : '')
+    + path.extname(file.path);
 
 const writeFileAsync = (file, dest) => {
     return new Promise((resolve, reject) => {

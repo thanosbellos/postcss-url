@@ -80,6 +80,10 @@ describe('copy when inline fallback', () => {
 function testCopy(opts, postcssOpts) {
     const optsWithHash = Object.assign({}, opts, { useHash: true });
     const optsWithAppendHash = Object.assign({}, opts, { useHash: true, hashOptions: { append: true } });
+    const optsWithAppendAndKebabCase = Object.assign({}, opts, { useHash: true,
+        hashOptions: { append: true, kebabCase: true } });
+    const optsWithSuffixHash = Object.assign({}, opts, { useHash: true,
+        hashOptions: { append: true, suffix: 'digested' } });
     const assetsPath = opts.assetsPath ? `${opts.assetsPath}\/` : '';
     const patterns = {
         copyPixelPng: new RegExp(`"${assetsPath}imported\/pixel\.png"`),
@@ -89,7 +93,10 @@ function testCopy(opts, postcssOpts) {
         copyParamsPixelGif: new RegExp(`"${assetsPath}pixel\\.gif\\#el"`),
         copyXXHashPixel8: new RegExp(`"${assetsPath}[a-z0-9]{8}\\.png"`),
         copyXXHashParamsPixel8: new RegExp(`"${assetsPath}[a-z0-9]{8}\\.png\\?v=1\\.1\\#iefix"`),
-        copyXXHashPrependPixel8: new RegExp(`"${assetsPath}pixel_[a-z0-9]{8}\\.png"`)
+        copyXXHashPrependPixel8: new RegExp(`"${assetsPath}pixel_[a-z0-9]{8}\\.png"`),
+        copyXXHashPrependWithKebab: new RegExp(`"${assetsPath}pixel-[a-z0-9]{8}\\.png"`),
+        copyXXHashPrependWithKebabAndSuffix: new RegExp(`"${assetsPath}pixel-[a-z0-9]{8}\\.digested\\.png"`),
+        copyXXHashSuffixPixel8: new RegExp(`"${assetsPath}pixel_[a-z0-9]{8}\\.digested\\.png"`)
     };
     const matchAll = (css, patternsKeys) =>
         assert.ok(patternsKeys.every((pat) => css.match(patterns[pat])));
@@ -143,6 +150,27 @@ function testCopy(opts, postcssOpts) {
             )
                 .then((css) => {
                     matchAll(css, ['copyXXHashPrependPixel8']);
+                });
+        });
+
+        it('rebase the url using a hash and prepending the original filename', () => {
+            return processedCss(
+                'fixtures/copy-hash',
+                optsWithAppendAndKebabCase,
+                postcssOpts
+            )
+                .then((css) => {
+                    matchAll(css, ['copyXXHashPrependWithKebab']);
+                });
+        });
+        it('rebase the url using a hash and suffixing hashed filename', () => {
+            return processedCss(
+                'fixtures/copy-hash',
+                optsWithSuffixHash,
+                postcssOpts
+            )
+                .then((css) => {
+                    matchAll(css, ['copyXXHashSuffixPixel8']);
                 });
         });
     });
